@@ -1,0 +1,13 @@
+{
+  "name": "@scola/api-cache",
+  "version": "0.0.0",
+  "description": "Cache",
+  "repository": "github:scola84/node-api-cache",
+  "author": "M.C. van den Boogaart <scola@kvdb.name>",
+  "license": "MIT",
+  "main": "./dist/api-cache.js",
+  "jsnext:main": "index.js",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
