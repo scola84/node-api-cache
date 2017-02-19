@@ -1,4 +1,3 @@
-import parallel from 'async/parallel';
 import { debuglog } from 'util';
 import AbstractCache from './abstract';
 
@@ -9,15 +8,6 @@ export default class ListCache extends AbstractCache {
     this._log = debuglog('cache');
     this._date = null;
 
-    this._key = (request, scope) => {
-      return JSON.stringify([
-        request.path(),
-        request.query('where'),
-        request.query('order'),
-        scope === 'list' ? request.query('limit') : '',
-      ]);
-    };
-
     this.touch();
   }
 
@@ -26,76 +16,9 @@ export default class ListCache extends AbstractCache {
     return this;
   }
 
-  get(request, callback) {
-    this._log('ListCache get %s', request.path());
+  get(key, callback) {
+    this._log('ListCache get %s', key);
 
-    parallel([
-      (c) => {
-        const key = this._key(request, 'list');
-        this._get(key, c);
-      },
-      (c) => {
-        const key = this._key(request, 'total');
-        this._get(key, c);
-      }
-    ], (error, [list, total]) => {
-      if (error) {
-        callback(error);
-        return;
-      }
-
-      if (list) {
-        this._cache.emit('hit', request);
-      }
-
-      callback(null, list, total);
-    });
-  }
-
-  set(request, data, setTotal, callback) {
-    this._log('ListCache set %s', request.path());
-
-    if (!setTotal) {
-      const key = this._key(request, 'list');
-      this._set(key, data, callback);
-      return;
-    }
-
-    parallel([
-      (c) => {
-        const key = this._key(request, 'list');
-        this._set(key, data[0], c);
-      },
-      (c) => {
-        const key = this._key(request, 'total');
-        this._set(key, data[1][0].total, c);
-      }
-    ], (error, [list, total]) => {
-      if (error) {
-        callback(error);
-        return;
-      }
-
-      callback(null, list, total);
-    });
-  }
-
-  del(request, callback) {
-    this._log('ListCache del %s', request.path());
-
-    parallel([
-      (c) => {
-        const key = this._key(request, 'list');
-        this._client.del(key, c);
-      },
-      (c) => {
-        const key = this._key(request, 'total');
-        this._client.del(key, c);
-      }
-    ], callback);
-  }
-
-  _get(key, callback) {
     this._client.get(key, (error, value) => {
       if (error) {
         callback(error);
@@ -116,7 +39,9 @@ export default class ListCache extends AbstractCache {
     });
   }
 
-  _set(key, data, callback) {
+  set(key, data, callback) {
+    this._log('ListCache set %s', key);
+
     const value = {
       data,
       date: Date.now()
@@ -130,5 +55,10 @@ export default class ListCache extends AbstractCache {
 
       callback(null, data);
     });
+  }
+
+  del(key, callback) {
+    this._log('ListCache del %s', key);
+    this._client.del(key, callback);
   }
 }

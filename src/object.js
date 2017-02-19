@@ -6,16 +6,10 @@ export default class ObjectCache extends AbstractCache {
     super();
 
     this._log = debuglog('cache');
-
-    this._key = (request) => {
-      return request.path();
-    };
   }
 
-  get(request, callback) {
-    this._log('ObjectCache get %s', request.path());
-
-    const key = this._key(request);
+  get(key, callback) {
+    this._log('ObjectCache get %s', key);
 
     this._client.get(key, (error, value) => {
       if (error) {
@@ -28,15 +22,12 @@ export default class ObjectCache extends AbstractCache {
         return;
       }
 
-      this._cache.emit('hit', request);
       callback(null, value);
     });
   }
 
-  set(request, value, callback) {
-    this._log('ObjectCache set %s', request.path());
-
-    const key = this._key(request);
+  set(key, value, callback) {
+    this._log('ObjectCache set %s', key);
 
     this._client.set(key, value, (error) => {
       if (error) {
@@ -48,10 +39,8 @@ export default class ObjectCache extends AbstractCache {
     });
   }
 
-  del(request, callback) {
-    this._log('ObjectCache del %s', request.path());
-
-    const key = this._key(request);
+  del(key, callback) {
+    this._log('ObjectCache del %s', key);
     this._client.del(key, callback);
   }
 }

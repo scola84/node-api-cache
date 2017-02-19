@@ -1,17 +1,20 @@
 import { MD5 } from 'object-hash';
+import objectKeyFactory from './key';
 
-export default function setList(cache, end = true) {
+export default function setObject(cache, options = {}) {
+  const keyFactory = options.key || objectKeyFactory;
+  const end = options.end === false ? false : true;
+
   return (request, response, next) => {
-    const value = request.data();
-    const setTotal = typeof response.header('x-total') !== 'number';
+    const key = keyFactory(request);
 
-    cache.set(request, value, setTotal, (error, list, total) => {
+    cache.set(key, request.data(), (error, object) => {
       if (error) {
         next(error);
         return;
       }
 
-      const hash = MD5(list);
+      const hash = MD5(object);
 
       if (request.header('x-etag') === hash) {
         response.status(304);
@@ -27,14 +30,10 @@ export default function setList(cache, end = true) {
 
       response.header('x-etag', hash);
 
-      if (typeof total === 'number') {
-        response.header('x-total', total);
-      }
-
       if (end === true) {
-        response.end(list);
+        response.end(object);
       } else {
-        response.write(list);
+        response.write(object);
       }
     });
   };

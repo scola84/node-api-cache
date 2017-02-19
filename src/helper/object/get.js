@@ -1,14 +1,25 @@
 import { MD5 } from 'object-hash';
+import objectKeyFactory from './key';
 
-export default function setObject(cache, end = true) {
+export default function getObject(cache, options = {}) {
+  const keyFactory = options.key || objectKeyFactory;
+  const end = options.end === false ? false : true;
+
   return (request, response, next) => {
-    const value = request.data();
+    const key = keyFactory(request);
 
-    cache.set(request, value, (error, object) => {
+    cache.get(key, (error, object) => {
       if (error) {
         next(error);
         return;
       }
+
+      if (!object) {
+        next();
+        return;
+      }
+
+      cache.cache().emit('hit', request);
 
       const hash = MD5(object);
 
@@ -31,6 +42,8 @@ export default function setObject(cache, end = true) {
       } else {
         response.write(object);
       }
+
+      next();
     });
   };
 }
