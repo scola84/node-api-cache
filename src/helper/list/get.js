@@ -42,8 +42,6 @@ export default function getList(cache, options = {}) {
       } else {
         response.write(list);
       }
-
-      next();
     });
   };
 }

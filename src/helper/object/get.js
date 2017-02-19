@@ -42,8 +42,6 @@ export default function getObject(cache, options = {}) {
       } else {
         response.write(object);
       }
-
-      next();
     });
   };
 }
