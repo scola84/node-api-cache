@@ -1,10 +1,12 @@
 import parallel from 'async/parallel';
+import { debuglog } from 'util';
 import AbstractCache from './abstract';
 
 export default class ListCache extends AbstractCache {
   constructor() {
     super();
 
+    this._log = debuglog('cache');
     this._date = null;
 
     this._key = (request, scope) => {
@@ -25,6 +27,8 @@ export default class ListCache extends AbstractCache {
   }
 
   get(request, callback) {
+    this._log('ListCache get %s', request.path());
+
     parallel([
       (c) => {
         const key = this._key(request, 'list');
@@ -49,6 +53,8 @@ export default class ListCache extends AbstractCache {
   }
 
   set(request, data, setTotal, callback) {
+    this._log('ListCache set %s', request.path());
+
     if (!setTotal) {
       const key = this._key(request, 'list');
       this._set(key, data, callback);
@@ -75,6 +81,8 @@ export default class ListCache extends AbstractCache {
   }
 
   del(request, callback) {
+    this._log('ListCache del %s', request.path());
+
     parallel([
       (c) => {
         const key = this._key(request, 'list');

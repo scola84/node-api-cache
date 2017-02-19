@@ -1,8 +1,11 @@
+import { debuglog } from 'util';
 import AbstractCache from './abstract';
 
 export default class ObjectCache extends AbstractCache {
   constructor() {
     super();
+
+    this._log = debuglog('cache');
 
     this._key = (request) => {
       return request.path();
@@ -10,6 +13,8 @@ export default class ObjectCache extends AbstractCache {
   }
 
   get(request, callback) {
+    this._log('ObjectCache get %s', request.path());
+
     const key = this._key(request);
 
     this._client.get(key, (error, value) => {
@@ -29,6 +34,8 @@ export default class ObjectCache extends AbstractCache {
   }
 
   set(request, value, callback) {
+    this._log('ObjectCache set %s', request.path());
+
     const key = this._key(request);
 
     this._client.set(key, value, (error) => {
@@ -42,6 +49,8 @@ export default class ObjectCache extends AbstractCache {
   }
 
   del(request, callback) {
+    this._log('ObjectCache del %s', request.path());
+
     const key = this._key(request);
     this._client.del(key, callback);
   }
