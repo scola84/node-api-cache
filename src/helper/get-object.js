@@ -1,6 +1,6 @@
-export default function readObjectCache(cache, end = true) {
+export default function getObject(cache, end = true) {
   return (request, response, next) => {
-    cache.read(request, (error, object) => {
+    cache.get(request, (error, object) => {
       if (error) {
         next(error);
         return;

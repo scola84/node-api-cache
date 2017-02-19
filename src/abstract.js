@@ -3,9 +3,6 @@ export default class AbstractCache {
     this._cache = null;
     this._client = null;
     this._key = null;
-    this._date = null;
-
-    this.touch();
   }
 
   cache(value = null) {
@@ -35,53 +32,15 @@ export default class AbstractCache {
     return this;
   }
 
-  touch() {
-    this._date = Date.now();
-    return this;
-  }
-
-  read() {
+  get() {
     throw new Error('Not implemented');
   }
 
-  write() {
+  set() {
     throw new Error('Not implemented');
   }
 
-  _read(key, callback) {
-    this._client.get(key, (error, value) => {
-      if (error) {
-        callback(error);
-        return;
-      }
-
-      if (!value) {
-        callback();
-        return;
-      }
-
-      if (value.date < this._date) {
-        this._client.del(key, () => callback());
-        return;
-      }
-
-      callback(null, value.data);
-    });
-  }
-
-  _write(key, data, callback) {
-    const value = {
-      data,
-      date: Date.now()
-    };
-
-    this._client.set(key, value, (error) => {
-      if (error) {
-        callback(error);
-        return;
-      }
-
-      callback(null, data);
-    });
+  del() {
+    throw new Error('Not implemented');
   }
 }

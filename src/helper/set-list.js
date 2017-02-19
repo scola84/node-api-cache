@@ -1,9 +1,9 @@
-export default function writeListCache(cache, end = true) {
+export default function setList(cache, end = true) {
   return (request, response, next) => {
     const value = request.data();
-    const writeTotal = typeof response.header('x-total') !== 'number';
+    const setTotal = typeof response.header('x-total') !== 'number';
 
-    cache.write(request, value, writeTotal, (error, list, total) => {
+    cache.set(request, value, setTotal, (error, list, total) => {
       if (error) {
         next(error);
         return;

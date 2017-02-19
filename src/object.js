@@ -9,22 +9,40 @@ export default class ObjectCache extends AbstractCache {
     };
   }
 
-  read(request, callback) {
+  get(request, callback) {
     const key = this._key(request);
 
-    this._read(key, (error, object) => {
+    this._client.get(key, (error, value) => {
       if (error) {
         callback(error);
         return;
       }
 
-      this._cache.emit('read', request);
-      callback(null, object);
+      if (!value) {
+        callback();
+        return;
+      }
+
+      this._cache.emit('hit', request);
+      callback(null, value);
     });
   }
 
-  write(request, data, callback) {
+  set(request, value, callback) {
     const key = this._key(request);
-    this._write(key, data, callback);
+
+    this._client.set(key, value, (error) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      callback(null, value);
+    });
+  }
+
+  del(request, callback) {
+    const key = this._key(request);
+    this._client.del(key, callback);
   }
 }

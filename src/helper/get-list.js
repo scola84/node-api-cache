@@ -1,6 +1,6 @@
-export default function readListCache(cache, end = true) {
+export default function getList(cache, end = true) {
   return (request, response, next) => {
-    cache.read(request, (error, list, total) => {
+    cache.get(request, (error, list, total) => {
       if (error) {
         next(error);
         return;

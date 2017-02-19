@@ -1,8 +1,8 @@
-export default function writeObjectCache(cache, end = true) {
+export default function setObject(cache, end = true) {
   return (request, response, next) => {
     const value = request.data();
 
-    cache.write(request, value, (error, object) => {
+    cache.set(request, value, (error, object) => {
       if (error) {
         next(error);
         return;

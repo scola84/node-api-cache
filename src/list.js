@@ -5,6 +5,8 @@ export default class ListCache extends AbstractCache {
   constructor() {
     super();
 
+    this._date = null;
+
     this._key = (request, scope) => {
       return JSON.stringify([
         request.path(),
@@ -13,17 +15,24 @@ export default class ListCache extends AbstractCache {
         scope === 'list' ? request.query('limit') : '',
       ]);
     };
+
+    this.touch();
   }
 
-  read(request, callback) {
+  touch() {
+    this._date = Date.now();
+    return this;
+  }
+
+  get(request, callback) {
     parallel([
       (c) => {
         const key = this._key(request, 'list');
-        this._read(key, c);
+        this._get(key, c);
       },
       (c) => {
         const key = this._key(request, 'total');
-        this._read(key, c);
+        this._get(key, c);
       }
     ], (error, [list, total]) => {
       if (error) {
@@ -32,28 +41,28 @@ export default class ListCache extends AbstractCache {
       }
 
       if (list) {
-        this._cache.emit('read', request);
+        this._cache.emit('hit', request);
       }
 
       callback(null, list, total);
     });
   }
 
-  write(request, data, writeTotal, callback) {
-    if (!writeTotal) {
+  set(request, data, setTotal, callback) {
+    if (!setTotal) {
       const key = this._key(request, 'list');
-      this._write(key, data, callback);
+      this._set(key, data, callback);
       return;
     }
 
     parallel([
       (c) => {
         const key = this._key(request, 'list');
-        this._write(key, data[0], c);
+        this._set(key, data[0], c);
       },
       (c) => {
         const key = this._key(request, 'total');
-        this._write(key, data[1][0].total, c);
+        this._set(key, data[1][0].total, c);
       }
     ], (error, [list, total]) => {
       if (error) {
@@ -62,6 +71,56 @@ export default class ListCache extends AbstractCache {
       }
 
       callback(null, list, total);
+    });
+  }
+
+  del(request, callback) {
+    parallel([
+      (c) => {
+        const key = this._key(request, 'list');
+        this._client.del(key, c);
+      },
+      (c) => {
+        const key = this._key(request, 'total');
+        this._client.del(key, c);
+      }
+    ], callback);
+  }
+
+  _get(key, callback) {
+    this._client.get(key, (error, value) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      if (!value) {
+        callback();
+        return;
+      }
+
+      if (value.date < this._date) {
+        this._client.del(key, () => callback());
+        return;
+      }
+
+      callback(null, value.data);
+    });
+  }
+
+  _set(key, data, callback) {
+    const value = {
+      data,
+      date: Date.now()
+    };
+
+    this._client.set(key, value, (error) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      callback(null, data);
     });
   }
 }
