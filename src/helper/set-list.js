@@ -1,3 +1,5 @@
+import { MD5 } from 'object-hash';
+
 export default function setList(cache, end = true) {
   return (request, response, next) => {
     const value = request.data();
@@ -8,6 +10,22 @@ export default function setList(cache, end = true) {
         next(error);
         return;
       }
+
+      const hash = MD5(list);
+
+      if (request.header('x-etag') === hash) {
+        response.status(304);
+
+        if (end === true) {
+          response.end();
+        } else {
+          response.write('');
+        }
+
+        return;
+      }
+
+      response.header('x-etag', hash);
 
       if (typeof total === 'number') {
         response.header('x-total', total);
