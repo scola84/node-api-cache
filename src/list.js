@@ -20,7 +20,7 @@ export default class ListCache extends AbstractCache {
     return this;
   }
 
-  get(key, callback) {
+  get(key, callback = () => {}) {
     this._log('ListCache get %s', key);
 
     this._client.get(key, (error, value) => {
@@ -43,7 +43,7 @@ export default class ListCache extends AbstractCache {
     });
   }
 
-  set(key, data, callback) {
+  set(key, data, callback = () => {}) {
     this._log('ListCache set %s', key);
 
     const value = {

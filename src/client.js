@@ -3,16 +3,16 @@ export default class CacheClient {
     this._values = {};
   }
 
-  set(key, value, callback) {
+  set(key, value, callback = () => {}) {
     this._values[key] = value;
     callback();
   }
 
-  get(key, callback) {
+  get(key, callback = () => {}) {
     callback(null, this._values[key]);
   }
 
-  del(key, callback) {
+  del(key, callback = () => {}) {
     delete this._values[key];
     callback();
   }

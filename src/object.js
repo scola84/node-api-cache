@@ -8,7 +8,7 @@ export default class ObjectCache extends AbstractCache {
     this._log = debuglog('cache');
   }
 
-  get(key, callback) {
+  get(key, callback = () => {}) {
     this._log('ObjectCache get %s', key);
 
     this._client.get(key, (error, value) => {
@@ -26,7 +26,7 @@ export default class ObjectCache extends AbstractCache {
     });
   }
 
-  set(key, value, callback) {
+  set(key, value, callback = () => {}) {
     this._log('ObjectCache set %s', key);
 
     this._client.set(key, value, (error) => {
