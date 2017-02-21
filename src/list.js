@@ -1,3 +1,4 @@
+import { sha1 } from 'object-hash';
 import { debuglog } from 'util';
 import AbstractCache from './abstract';
 
@@ -21,7 +22,9 @@ export default class ListCache extends AbstractCache {
   }
 
   get(key, callback = () => {}) {
-    this._log('ListCache get %s', key);
+    this._log('ListCache get %j', key);
+
+    key = sha1(key);
 
     this._client.get(key, (error, value) => {
       if (error) {
@@ -44,7 +47,9 @@ export default class ListCache extends AbstractCache {
   }
 
   set(key, data, callback = () => {}) {
-    this._log('ListCache set %s', key);
+    this._log('ListCache set %j', key);
+
+    key = sha1(key);
 
     const value = {
       data,
@@ -62,7 +67,7 @@ export default class ListCache extends AbstractCache {
   }
 
   del(key, callback) {
-    this._log('ListCache del %s', key);
-    this._client.del(key, callback);
+    this._log('ListCache del %j', key);
+    this._client.del(sha1(key), callback);
   }
 }

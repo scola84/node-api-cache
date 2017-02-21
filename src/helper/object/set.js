@@ -1,9 +1,10 @@
-import { MD5 } from 'object-hash';
+import handleEtag from '../etag';
 import objectKeyFactory from './key';
 
 export default function setObject(cache, options = {}) {
   const keyFactory = options.key || objectKeyFactory;
   const end = options.end === false ? false : true;
+  const etag = options.etag === false ? false : true;
 
   return (request, response, next) => {
     const key = keyFactory(request);
@@ -14,21 +15,9 @@ export default function setObject(cache, options = {}) {
         return;
       }
 
-      const hash = MD5(object);
-
-      if (request.header('x-etag') === hash) {
-        response.status(304);
-
-        if (end === true) {
-          response.end();
-        } else {
-          response.write('');
-        }
-
+      if (etag && handleEtag(request, response, object, end)) {
         return;
       }
-
-      response.header('x-etag', hash);
 
       if (end === true) {
         response.end(object);
