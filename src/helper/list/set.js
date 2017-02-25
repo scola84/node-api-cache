@@ -1,13 +1,13 @@
 import handleEtag from '../etag';
-import listKeyFactory from './key';
+import keyFactory from './key';
 
 export default function setList(cache, options = {}) {
-  const keyFactory = options.key || listKeyFactory;
   const end = options.end === false ? false : true;
   const etag = options.etag === false ? false : true;
+  const fields = options.list ? options.list : null;
 
   return (request, response, next) => {
-    const key = keyFactory(request);
+    const key = keyFactory(request, fields);
 
     cache.set(key, request.data(), (error, list) => {
       if (error) {

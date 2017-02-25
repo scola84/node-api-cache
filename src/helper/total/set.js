@@ -1,7 +1,7 @@
-import totalKeyFactory from './key';
+import keyFactory from './key';
 
-export default function setList(cache, options = {}) {
-  const keyFactory = options.key || totalKeyFactory;
+export default function getTotal(cache, options = {}) {
+  const fields = options.total ? options.total : ['where'];
 
   return (request, response, next) => {
     if (typeof response.header('x-total') === 'number') {
@@ -9,7 +9,7 @@ export default function setList(cache, options = {}) {
       return;
     }
 
-    const key = keyFactory(request);
+    const key = keyFactory(request, fields);
 
     cache.set(key, request.data(), (error, total) => {
       if (error) {

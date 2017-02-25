@@ -1,10 +1,10 @@
-import totalKeyFactory from './key';
+import keyFactory from './key';
 
 export default function getTotal(cache, options = {}) {
-  const keyFactory = options.key || totalKeyFactory;
+  const fields = options.total ? options.total : ['where'];
 
   return (request, response, next) => {
-    const key = keyFactory(request);
+    const key = keyFactory(request, fields);
 
     cache.get(key, (error, total) => {
       if (error) {

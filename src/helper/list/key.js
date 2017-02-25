@@ -1,8 +1,8 @@
-export default function listKeyFactory(request) {
+import pick from 'lodash-es/pick';
+
+export default function listKeyFactory(request, fields) {
   return [
     request.path(),
-    request.query('where'),
-    request.query('order'),
-    request.query('limit')
+    fields ? pick(request.query(), fields) : request.query()
   ];
 }
