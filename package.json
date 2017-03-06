@@ -8,6 +8,7 @@
   "main": "./dist/api-cache.js",
   "jsnext:main": "index.js",
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash-es": "^4.17.4",
+    "object-hash": "^1.1.7"
   }
 }
