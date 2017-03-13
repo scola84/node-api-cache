@@ -1,10 +1,13 @@
+import defaults from 'lodash-es/defaults';
 import handleEtag from '../etag';
-import objectKeyFactory from './key';
+import keyFactory from './key';
 
 export default function getObject(cache, options = {}) {
-  const keyFactory = options.key || objectKeyFactory;
-  const end = options.end === false ? false : true;
-  const etag = options.etag === false ? false : true;
+  options = defaults({}, options, {
+    etag: true
+  });
+
+  const end = Boolean(cache.channel());
 
   return (request, response, next) => {
     const key = keyFactory(request);
@@ -22,7 +25,10 @@ export default function getObject(cache, options = {}) {
 
       cache.cache().emit('hit', request);
 
-      if (etag && handleEtag(request, response, object, end)) {
+      const etag = options.etag === true &&
+        handleEtag(request, response, object, end);
+
+      if (etag) {
         return;
       }
 

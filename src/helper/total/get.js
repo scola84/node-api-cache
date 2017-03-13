@@ -1,10 +1,13 @@
+import defaults from 'lodash-es/defaults';
 import keyFactory from './key';
 
 export default function getTotal(cache, options = {}) {
-  const fields = options.total ? options.total : ['where'];
+  options = defaults({}, options, {
+    total: ['where']
+  });
 
   return (request, response, next) => {
-    const key = keyFactory(request, fields);
+    const key = keyFactory(request, options.total);
 
     cache.get(key, (error, total) => {
       if (error) {

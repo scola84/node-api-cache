@@ -1,8 +1,12 @@
 export default class AbstractCache {
   constructor() {
     this._cache = null;
+    this._channel = null;
     this._client = null;
+    this._date = Date.now();
     this._key = null;
+
+    this._handlePublish = () => this._publish();
   }
 
   cache(value = null) {
@@ -14,12 +18,32 @@ export default class AbstractCache {
     return this;
   }
 
+  channel(value = null) {
+    if (value === null) {
+      return this._channel;
+    }
+
+    this._channel = value;
+    this._bindChannel();
+
+    return this;
+  }
+
   client(value = null) {
     if (value === null) {
       return this._client;
     }
 
     this._client = value;
+    return this;
+  }
+
+  date(value = null) {
+    if (value === null) {
+      return this._date;
+    }
+
+    this._date = value;
     return this;
   }
 
@@ -42,5 +66,21 @@ export default class AbstractCache {
 
   del() {
     throw new Error('Not implemented');
+  }
+
+  _bindChannel() {
+    if (this._channel) {
+      this._channel.on('publish', this._handlePublish);
+    }
+  }
+
+  _unbindChannel() {
+    if (this._channel) {
+      this._channel.removeListener('publish', this._handlePublish);
+    }
+  }
+
+  _publish() {
+    this.date(Date.now());
   }
 }

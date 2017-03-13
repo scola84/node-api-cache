@@ -5,7 +5,6 @@ import AbstractCache from './abstract';
 export default class ObjectCache extends AbstractCache {
   constructor() {
     super();
-
     this._log = debuglog('cache');
   }
 

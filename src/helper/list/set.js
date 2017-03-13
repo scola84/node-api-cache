@@ -1,13 +1,17 @@
+import defaults from 'lodash-es/defaults';
 import handleEtag from '../etag';
 import keyFactory from './key';
 
 export default function setList(cache, options = {}) {
-  const end = options.end === false ? false : true;
-  const etag = options.etag === false ? false : true;
-  const fields = options.list ? options.list : null;
+  options = defaults({}, options, {
+    etag: true,
+    list: null
+  });
+
+  const end = Boolean(cache.channel());
 
   return (request, response, next) => {
-    const key = keyFactory(request, fields);
+    const key = keyFactory(request, options.list);
 
     cache.set(key, request.data(), (error, list) => {
       if (error) {
@@ -15,7 +19,10 @@ export default function setList(cache, options = {}) {
         return;
       }
 
-      if (etag && handleEtag(request, response, list, end)) {
+      const etag = options.etag === true &&
+        handleEtag(request, response, list, end);
+
+      if (etag) {
         return;
       }
 
