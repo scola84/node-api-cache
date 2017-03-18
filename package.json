@@ -5,8 +5,8 @@
   "repository": "github:scola84/node-api-cache",
   "author": "M.C. van den Boogaart <scola@kvdb.name>",
   "license": "MIT",
-  "main": "./dist/api-cache.js",
-  "jsnext:main": "index.js",
+  "main": "./index.js",
+  "jsnext:main": "./index.js",
   "dependencies": {
     "lodash-es": "^4.17.4",
     "object-hash": "^1.1.7"
