@@ -7,10 +7,19 @@ export default class Cache {
 
     this._channel = null;
     this._client = null;
-    this._date = Date.now();
     this._factory = null;
 
+    this._date = Date.now();
+
     this._handlePublish = (e) => this._publish(e);
+  }
+
+  destroy() {
+    this._unbindChannel();
+
+    this._channel = null;
+    this._client = null;
+    this._factory = null;
   }
 
   channel(value = null) {
@@ -30,15 +39,6 @@ export default class Cache {
     }
 
     this._client = value;
-    return this;
-  }
-
-  date(value = null) {
-    if (value === null) {
-      return this._date;
-    }
-
-    this._date = value;
     return this;
   }
 
@@ -143,7 +143,7 @@ export default class Cache {
         break;
     }
 
-    this.date(Date.now());
+    this._date = Date.now();
   }
 
   _hash(key) {

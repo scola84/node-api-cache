@@ -11,6 +11,15 @@ export default class Factory extends EventEmitter {
     this._cache = new Map();
   }
 
+  destroy() {
+    this._instances.forEach((instance) => {
+      instance.destroy();
+    });
+
+    this._instances.clear();
+    this._client = null;
+  }
+
   client(value = null) {
     if (value === null) {
       return this._client;
