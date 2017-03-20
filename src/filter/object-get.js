@@ -1,6 +1,6 @@
 import defaults from 'lodash-es/defaults';
-import handleEtag from '../etag';
-import keyFactory from './key';
+import handleEtag from '../helper/etag';
+import keyFactory from '../helper/key';
 
 export default function getObject(cache, options = {}) {
   options = defaults({}, options, {
@@ -10,9 +10,9 @@ export default function getObject(cache, options = {}) {
   const write = Boolean(cache.channel());
 
   return (request, response, next) => {
-    const key = keyFactory(request);
+    const key = keyFactory(request, []);
 
-    cache.get(key, (error, object) => {
+    cache.object(key, (error, object) => {
       if (error) {
         next(error);
         return;
@@ -23,7 +23,7 @@ export default function getObject(cache, options = {}) {
         return;
       }
 
-      cache.cache().emit('hit', request);
+      cache.factory().emit('hit', request);
 
       const etag = options.etag === true &&
         handleEtag(request, response, object, write);

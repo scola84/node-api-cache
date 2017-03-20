@@ -1,35 +1,34 @@
 import defaults from 'lodash-es/defaults';
-import handleEtag from '../etag';
-import keyFactory from './key';
+import handleEtag from '../helper/etag';
+import keyFactory from '../helper/key';
 
-export default function setList(cache, options = {}) {
+export default function setObject(cache, options = {}) {
   options = defaults({}, options, {
-    etag: true,
-    list: null
+    etag: true
   });
 
   const write = Boolean(cache.channel());
 
   return (request, response, next) => {
-    const key = keyFactory(request, options.list);
+    const key = keyFactory(request, []);
 
-    cache.set(key, request.data(), (error, list) => {
+    cache.set(key, request.data(), (error, object) => {
       if (error) {
         next(error);
         return;
       }
 
       const etag = options.etag === true &&
-        handleEtag(request, response, list, write);
+        handleEtag(request, response, object, write);
 
       if (etag) {
         return;
       }
 
       if (write === true) {
-        response.write(list);
+        response.write(object);
       } else {
-        response.end(list);
+        response.end(object);
       }
     });
   };

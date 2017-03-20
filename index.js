@@ -1,23 +1,15 @@
-import Cache from './src/cache';
+import CacheFactory from './src/factory';
 import CacheClient from './src/client';
-import getList from './src/helper/list/get';
-import setList from './src/helper/list/set';
-import getObject from './src/helper/object/get';
-import setObject from './src/helper/object/set';
-import getTotal from './src/helper/total/get';
-import setTotal from './src/helper/total/set';
-
-function cacheClient() {
-  return new CacheClient();
-}
+import getList from './src/filter/list-get';
+import setList from './src/filter/list-set';
+import getObject from './src/filter/object-get';
+import setObject from './src/filter/object-set';
 
 export {
-  Cache,
-  cacheClient,
+  CacheClient,
+  CacheFactory,
   getList,
   setList,
   getObject,
-  setObject,
-  getTotal,
-  setTotal
+  setObject
 };

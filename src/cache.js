@@ -1,17 +1,27 @@
-import { EventEmitter } from 'events';
+import md5 from 'crypto-js/md5';
 import { debuglog } from 'util';
-import ListCache from './list';
-import ObjectCache from './object';
 
-export default class Cache extends EventEmitter {
+export default class Cache {
   constructor() {
-    super();
-
     this._log = debuglog('cache');
-    this._client = null;
 
-    this._lists = new Map();
-    this._objects = new Map();
+    this._channel = null;
+    this._client = null;
+    this._date = Date.now();
+    this._factory = null;
+
+    this._handlePublish = (e) => this._publish(e);
+  }
+
+  channel(value = null) {
+    if (value === null) {
+      return this._channel;
+    }
+
+    this._channel = value;
+    this._bindChannel();
+
+    return this;
   }
 
   client(value = null) {
@@ -23,25 +33,120 @@ export default class Cache extends EventEmitter {
     return this;
   }
 
-  list(name) {
-    if (!this._lists.has(name)) {
-      this._lists.set(name, new ListCache()
-        .cache(this)
-        .client(this._client));
+  date(value = null) {
+    if (value === null) {
+      return this._date;
     }
 
-    this._log('Cache list %s (%s)', name, this._lists.size);
-    return this._lists.get(name);
+    this._date = value;
+    return this;
   }
 
-  object(name) {
-    if (!this._objects.has(name)) {
-      this._objects.set(name, new ObjectCache()
-        .cache(this)
-        .client(this._client));
+  factory(value = null) {
+    if (value === null) {
+      return this._factory;
     }
 
-    this._log('Cache object %s (%s)', name, this._objects.size);
-    return this._objects.get(name);
+    this._factory = value;
+    return this;
+  }
+
+  get(key, callback) {
+    this._log('Cache get %j', key);
+    this._get(key, true, callback);
+  }
+
+  list(key, callback) {
+    this._log('Cache list %j', key);
+    this._get(key, true, callback);
+  }
+
+  object(key, callback) {
+    this._log('Cache object %j', key);
+    this._get(key, false, callback);
+  }
+
+  set(key, data, callback = () => {}) {
+    this._log('Cache set %j', key);
+
+    key = this._hash(key);
+
+    const value = {
+      data,
+      date: Date.now()
+    };
+
+    this._client.set(key, value, (error) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      callback(null, data);
+    });
+  }
+
+  del(key, callback) {
+    this._log('Cache del %j', key);
+    this._client.del(this._hash(key), callback);
+  }
+
+  _bindChannel() {
+    if (this._channel) {
+      this._channel.on('publish', this._handlePublish);
+    }
+  }
+
+  _unbindChannel() {
+    if (this._channel) {
+      this._channel.removeListener('publish', this._handlePublish);
+    }
+  }
+
+  _get(key, check, callback = () => {}) {
+    key = this._hash(key);
+
+    this._client.get(key, (error, value) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      if (!value) {
+        callback();
+        return;
+      }
+
+      if (check === true && value.date < this._date) {
+        this._client.del(key, () => callback());
+        return;
+      }
+
+      callback(null, value.data);
+    });
+  }
+
+  _publish(event) {
+    this._log('Cache _publish %j', event);
+
+    const key = [event.path, {}];
+
+    switch (event.type) {
+      case 'insert':
+        this.set(key, event.data);
+        break;
+      case 'update':
+        this.set(key, event.data);
+        break;
+      case 'delete':
+        this.del(key);
+        break;
+    }
+
+    this.date(Date.now());
+  }
+
+  _hash(key) {
+    return md5(JSON.stringify(key));
   }
 }
