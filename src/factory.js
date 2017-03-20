@@ -8,7 +8,7 @@ export default class Factory extends EventEmitter {
 
     this._log = debuglog('cache');
     this._client = null;
-    this._cache = new Map();
+    this._instances = new Map();
   }
 
   destroy() {
@@ -30,12 +30,12 @@ export default class Factory extends EventEmitter {
   }
 
   create(path) {
-    if (!this._cache.has(path)) {
-      this._cache.set(path, new Cache()
+    if (!this._instances.has(path)) {
+      this._instances.set(path, new Cache()
         .factory(this)
         .client(this._client));
     }
 
-    return this._cache.get(path);
+    return this._instances.get(path);
   }
 }
