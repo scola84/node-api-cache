@@ -18,7 +18,13 @@ export default function getObject(cache, options = {}) {
         return;
       }
 
-      if (!object) {
+      const result = {
+        object
+      };
+
+      request.data(result);
+
+      if (!result.object) {
         next();
         return;
       }
@@ -26,17 +32,20 @@ export default function getObject(cache, options = {}) {
       cache.factory().emit('hit', request);
 
       const etag = options.etag === true &&
-        handleEtag(request, response, object, write);
+        handleEtag(request, response, result.object, write);
 
       if (etag) {
+        next();
         return;
       }
 
       if (write === true) {
-        response.write(object);
+        response.write(result.object);
       } else {
-        response.end(object);
+        response.end(result.object);
       }
+
+      next();
     });
   };
 }

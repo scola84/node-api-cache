@@ -11,8 +11,9 @@ export default function setObject(cache, options = {}) {
 
   return (request, response, next) => {
     const key = keyFactory(request, []);
+    const data = request.data();
 
-    cache.set(key, request.data(), (error, object) => {
+    cache.set(key, data.object, (error, object) => {
       if (error) {
         next(error);
         return;

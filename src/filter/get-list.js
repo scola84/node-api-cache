@@ -27,6 +27,8 @@ export default function getList(cache, options = {}) {
         return;
       }
 
+      request.data(result);
+
       if (result.total) {
         response.header('x-total', result.total);
       }
@@ -42,6 +44,7 @@ export default function getList(cache, options = {}) {
         handleEtag(request, response, result.list, write);
 
       if (etag) {
+        next();
         return;
       }
 
@@ -50,6 +53,8 @@ export default function getList(cache, options = {}) {
       } else {
         response.end(result.list);
       }
+
+      next();
     });
   };
 }
