@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { debuglog } from 'util';
 import Cache from './cache';
 
-export default class Factory extends EventEmitter {
+export default class CacheFactory extends EventEmitter {
   constructor() {
     super();
 

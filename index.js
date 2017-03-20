@@ -1,9 +1,9 @@
 import CacheFactory from './src/factory';
 import CacheClient from './src/client';
-import getList from './src/filter/list-get';
-import setList from './src/filter/list-set';
-import getObject from './src/filter/object-get';
-import setObject from './src/filter/object-set';
+import getList from './src/filter/get-list';
+import setList from './src/filter/set-list';
+import getObject from './src/filter/get-object';
+import setObject from './src/filter/set-object';
 
 export {
   CacheClient,
