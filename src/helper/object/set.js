@@ -7,7 +7,7 @@ export default function setObject(cache, options = {}) {
     etag: true
   });
 
-  const end = Boolean(cache.channel());
+  const write = Boolean(cache.channel());
 
   return (request, response, next) => {
     const key = keyFactory(request);
@@ -19,16 +19,16 @@ export default function setObject(cache, options = {}) {
       }
 
       const etag = options.etag === true &&
-        handleEtag(request, response, object, end);
+        handleEtag(request, response, object, write);
 
       if (etag) {
         return;
       }
 
-      if (end === true) {
-        response.end(object);
-      } else {
+      if (write === true) {
         response.write(object);
+      } else {
+        response.end(object);
       }
     });
   };

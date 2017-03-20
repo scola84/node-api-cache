@@ -1,7 +1,5 @@
 import Cache from './src/cache';
 import CacheClient from './src/client';
-import cacheList from './src/helper/list';
-import cacheObject from './src/helper/object';
 import getList from './src/helper/list/get';
 import setList from './src/helper/list/set';
 import getObject from './src/helper/object/get';
@@ -15,10 +13,7 @@ function cacheClient() {
 
 export {
   Cache,
-  CacheClient,
   cacheClient,
-  cacheList,
-  cacheObject,
   getList,
   setList,
   getObject,

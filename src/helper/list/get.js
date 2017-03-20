@@ -8,7 +8,7 @@ export default function getList(cache, options = {}) {
     list: null
   });
 
-  const end = Boolean(cache.channel());
+  const write = Boolean(cache.channel());
 
   return (request, response, next) => {
     const key = keyFactory(request, options.list);
@@ -27,16 +27,16 @@ export default function getList(cache, options = {}) {
       cache.cache().emit('hit', request);
 
       const etag = options.etag === true &&
-        handleEtag(request, response, list, end);
+        handleEtag(request, response, list, write);
 
       if (etag) {
         return;
       }
 
-      if (end === true) {
-        response.end(list);
-      } else {
+      if (write === true) {
         response.write(list);
+      } else {
+        response.end(list);
       }
     });
   };
