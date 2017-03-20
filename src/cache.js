@@ -147,6 +147,6 @@ export default class Cache {
   }
 
   _hash(key) {
-    return md5(JSON.stringify(key));
+    return md5(JSON.stringify(key)).toString();
   }
 }
