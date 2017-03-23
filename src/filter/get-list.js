@@ -29,7 +29,7 @@ export default function getList(cache, options = {}) {
 
       request.data(result);
 
-      if (result.total) {
+      if (typeof result.total !== 'undefined') {
         response.header('x-total', result.total);
       }
 

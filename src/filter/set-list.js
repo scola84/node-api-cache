@@ -31,7 +31,7 @@ export default function setList(cache, options = {}) {
         return;
       }
 
-      if (result.total) {
+      if (typeof result.total !== 'undefined') {
         response.header('x-total', result.total);
       }
 
