@@ -30,7 +30,7 @@ export default class CacheFactory extends EventEmitter {
   }
 
   create(path) {
-    if (!this._instances.has(path)) {
+    if (this._instances.has(path) === false) {
       this._instances.set(path, new Cache()
         .factory(this)
         .client(this._client));
