@@ -13,7 +13,7 @@ export default function getObject(cache, options = {}) {
     const key = keyFactory(request, []);
 
     cache.object(key, (error, object) => {
-      if (error) {
+      if (error instanceof Error === true) {
         next(error);
         return;
       }
@@ -24,17 +24,18 @@ export default function getObject(cache, options = {}) {
 
       request.data(result);
 
-      if (!result.object) {
+      if (result.object === null) {
         next();
         return;
       }
 
       cache.factory().emit('hit', request);
 
-      const etag = options.etag === true &&
-        handleEtag(request, response, result.object, write);
+      const etag =
+        options.etag === true &&
+        handleEtag(request, response, result.object, write) === true;
 
-      if (etag) {
+      if (etag === true) {
         next();
         return;
       }

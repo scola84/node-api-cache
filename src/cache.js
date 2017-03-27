@@ -77,7 +77,7 @@ export default class Cache {
     };
 
     this._client.set(key, value, (error) => {
-      if (error) {
+      if (error instanceof Error === true) {
         callback(error);
         return;
       }
@@ -107,18 +107,18 @@ export default class Cache {
     key = this._hash(key);
 
     this._client.get(key, (error, value) => {
-      if (error) {
+      if (error instanceof Error === true) {
         callback(error);
         return;
       }
 
-      if (!value) {
-        callback();
+      if (value === null) {
+        callback(null, value);
         return;
       }
 
       if (check === true && value.date < this._date) {
-        this._client.del(key, () => callback());
+        this._client.del(key, () => callback(null, null));
         return;
       }
 

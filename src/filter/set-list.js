@@ -18,27 +18,31 @@ export default function setList(cache, options = {}) {
     const data = request.data();
 
     const tasks = {
-      list: (callback) => cache.set(listKey, data.list, callback)
+      list: (callback) => cache.set(listKey, data.list, callback),
+      total: (callback) => callback(null, null)
     };
 
-    if (typeof response.header('x-total') !== 'number') {
-      tasks.total = (callback) => cache.set(totalKey, data.total, callback);
+    if (response.header('x-total') === null) {
+      tasks.total = (callback) => {
+        cache.set(totalKey, data.total, callback);
+      };
     }
 
     parallel(tasks, (error, result) => {
-      if (error) {
+      if (error instanceof Error === true) {
         next(error);
         return;
       }
 
-      if (typeof result.total !== 'undefined') {
+      if (result.total !== null) {
         response.header('x-total', result.total);
       }
 
-      const etag = options.etag === true &&
-        handleEtag(request, response, result.list, write);
+      const etag =
+        options.etag === true &&
+        handleEtag(request, response, result.list, write) === true;
 
-      if (etag) {
+      if (etag === true) {
         return;
       }
 

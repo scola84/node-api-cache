@@ -1,19 +1,24 @@
-export default class CacheClient {
+export default class Client {
   constructor() {
-    this._values = {};
+    this._connection = null;
+    this._lifetime = 0;
   }
 
-  set(key, value, callback = () => {}) {
-    this._values[key] = value;
-    callback();
+  connection(value = null) {
+    if (value === null) {
+      return this._connection;
+    }
+
+    this._connection = value;
+    return this;
   }
 
-  get(key, callback = () => {}) {
-    callback(null, this._values[key]);
-  }
+  lifetime(value = null) {
+    if (value === null) {
+      return this._lifetime;
+    }
 
-  del(key, callback = () => {}) {
-    delete this._values[key];
-    callback();
+    this._lifetime = value;
+    return this;
   }
 }

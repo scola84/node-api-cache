@@ -22,28 +22,29 @@ export default function getList(cache, options = {}) {
     };
 
     parallel(tasks, (error, result) => {
-      if (error) {
+      if (error instanceof Error === true) {
         next(error);
         return;
       }
 
       request.data(result);
 
-      if (typeof result.total !== 'undefined') {
+      if (result.total !== null) {
         response.header('x-total', result.total);
       }
 
-      if (!result.list) {
+      if (result.list === null) {
         next();
         return;
       }
 
       cache.factory().emit('hit', request);
 
-      const etag = options.etag === true &&
-        handleEtag(request, response, result.list, write);
+      const etag =
+        options.etag === true &&
+        handleEtag(request, response, result.list, write) === true;
 
-      if (etag) {
+      if (etag === true) {
         next();
         return;
       }

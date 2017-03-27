@@ -1,8 +1,8 @@
 import pick from 'lodash-es/pick';
 
-export default function keyFactory(request, fields) {
+export default function keyFactory(request, fields = null) {
   return [
     request.path(),
-    fields ? pick(request.query(), fields) : request.query()
+    fields === null ? request.query() : pick(request.query(), fields)
   ];
 }

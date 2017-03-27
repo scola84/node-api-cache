@@ -14,15 +14,16 @@ export default function setObject(cache, options = {}) {
     const data = request.data();
 
     cache.set(key, data.object, (error, object) => {
-      if (error) {
+      if (error instanceof Error === true) {
         next(error);
         return;
       }
 
-      const etag = options.etag === true &&
-        handleEtag(request, response, object, write);
+      const etag =
+        options.etag === true &&
+        handleEtag(request, response, object, write) === true;
 
-      if (etag) {
+      if (etag === true) {
         return;
       }
 
