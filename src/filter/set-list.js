@@ -22,7 +22,7 @@ export default function setList(cache, options = {}) {
       total: (callback) => callback(null, null)
     };
 
-    if (response.header('x-total') === null) {
+    if (response.header('x-total') === null && data.total !== null) {
       tasks.total = (callback) => {
         cache.set(totalKey, data.total, callback);
       };
