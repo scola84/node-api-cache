@@ -38,8 +38,6 @@ export default function getList(cache, options = {}) {
         return;
       }
 
-      cache.factory().emit('hit', request);
-
       const etag =
         options.etag === true &&
         handleEtag(request, response, result.list, write) === true;

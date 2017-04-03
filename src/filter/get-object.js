@@ -29,8 +29,6 @@ export default function getObject(cache, options = {}) {
         return;
       }
 
-      cache.factory().emit('hit', request);
-
       const etag =
         options.etag === true &&
         handleEtag(request, response, result.object, write) === true;
