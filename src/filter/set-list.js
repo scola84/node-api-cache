@@ -18,11 +18,12 @@ export default function setList(cache, options = {}) {
     const data = request.data();
 
     const tasks = {
-      list: (callback) => cache.set(listKey, data.list, callback),
-      total: (callback) => callback(null, null)
+      list: (callback) => cache.set(listKey, data.list, callback)
     };
 
-    if (response.header('x-total') === null && data.total !== null) {
+    if (response.header('x-total') === null &&
+      typeof data.total !== 'undefined') {
+
       tasks.total = (callback) => {
         cache.set(totalKey, data.total, callback);
       };
@@ -34,7 +35,7 @@ export default function setList(cache, options = {}) {
         return;
       }
 
-      if (result.total !== null) {
+      if (typeof result.total !== 'undefined') {
         response.header('x-total', result.total);
       }
 
