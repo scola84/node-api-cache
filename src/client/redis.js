@@ -10,7 +10,7 @@ export default class RedisClient extends Client {
   get(key, callback = () => {}) {
     this._connection.get(key, (cacheError, value) => {
       try {
-        this._handleGet(cacheError, value, callback);
+        this._handleGet(key, value, cacheError, callback);
       } catch (error) {
         callback(error);
       }
@@ -37,7 +37,7 @@ export default class RedisClient extends Client {
     callback(null);
   }
 
-  _handleGet(error, value, callback) {
+  _handleGet(key, value, error, callback) {
     if (error instanceof Error === true) {
       callback(error);
       return;
@@ -45,6 +45,8 @@ export default class RedisClient extends Client {
 
     if (typeof value === 'undefined') {
       value = null;
+    } else if (this._touch === true) {
+      this._connection.expire(key, this._lifetime);
     }
 
     callback(null, JSON.parse(value));

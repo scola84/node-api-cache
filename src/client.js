@@ -2,6 +2,7 @@ export default class Client {
   constructor() {
     this._connection = null;
     this._lifetime = 0;
+    this._touch = false;
   }
 
   connection(value = null) {
@@ -19,6 +20,15 @@ export default class Client {
     }
 
     this._lifetime = value;
+    return this;
+  }
+
+  touch(value = null) {
+    if (value === null) {
+      return this._touch;
+    }
+
+    this._touch = value;
     return this;
   }
 }
