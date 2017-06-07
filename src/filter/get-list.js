@@ -1,59 +1,43 @@
-import parallel from 'async/parallel';
-import defaults from 'lodash-es/defaults';
-import handleEtag from '../helper/etag';
-import keyFactory from '../helper/key';
+export default function getList(server, formatKey = () => {},
+  executeQuery = () => {}) {
 
-export default function getList(cache, options = {}) {
-  options = defaults({}, options, {
-    etag: true,
-    list: null,
-    total: ['where']
-  });
-
-  const write = Boolean(cache.channel());
+  const cache = server.cache();
+  const router = server.router();
 
   return (request, response, next) => {
-    const listKey = keyFactory(request, options.list);
-    const totalKey = keyFactory(request, options.total);
+    const key = formatKey(request);
 
-    const tasks = {
-      list: (callback) => cache.list(listKey, callback),
-      total: (callback) => cache.get(totalKey, callback)
-    };
-
-    parallel(tasks, (error, result) => {
-      if (error instanceof Error === true) {
-        next(error);
+    cache.get(...key, (getError, cacheList) => {
+      if (getError instanceof Error === true) {
+        next(router.error('500 invalid_query ' +
+          getError.message));
         return;
       }
 
-      request.data(result);
-
-      if (result.total !== null) {
-        response.header('x-total', result.total);
-      }
-
-      if (result.list === null) {
+      if (cacheList !== null) {
+        request.datum('list', cacheList);
         next();
         return;
       }
 
-      const etag =
-        options.etag === true &&
-        handleEtag(request, response, result.list, write) === true;
+      executeQuery(request, (queryError, queryList) => {
+        if (queryError instanceof Error === true) {
+          next(router.error('500 invalid_query ' +
+            queryError.message));
+          return;
+        }
 
-      if (etag === true) {
-        next();
-        return;
-      }
+        cache.set(...key, queryList, (setError) => {
+          if (setError instanceof Error === true) {
+            next(router.error('500 invalid_query ' +
+              setError.message));
+            return;
+          }
 
-      if (write === true) {
-        response.write(result.list);
-      } else {
-        response.end(result.list);
-      }
-
-      next();
+          request.datum('list', queryList);
+          next();
+        });
+      });
     });
   };
 }

@@ -4,33 +4,12 @@ import { debuglog } from 'util';
 export default class Cache {
   constructor() {
     this._log = debuglog('cache');
-
-    this._channel = null;
     this._client = null;
-    this._factory = null;
-
-    this._date = Date.now();
-
-    this._handlePublish = (e) => this._publish(e);
+    this._dates = new Map();
   }
 
   destroy() {
-    this._unbindChannel();
-
-    this._channel = null;
     this._client = null;
-    this._factory = null;
-  }
-
-  channel(value = null) {
-    if (value === null) {
-      return this._channel;
-    }
-
-    this._channel = value;
-    this._bindChannel();
-
-    return this;
   }
 
   client(value = null) {
@@ -42,41 +21,47 @@ export default class Cache {
     return this;
   }
 
-  factory(value = null) {
-    if (value === null) {
-      return this._factory;
-    }
-
-    this._factory = value;
-    return this;
+  del(key, callback = () => {}) {
+    this._log('Cache del key=%j', key);
+    this._client.del(key, callback);
   }
 
-  get(key, callback) {
-    this._log('Cache get %j', key);
-    this._get(key, true, callback);
+  get(key, field, callback = () => {}) {
+    this._log('Cache get key=%j field=%j', key, field);
+
+    const hash = this._hash([key, field]);
+
+    this._client.get(hash, (error, value) => {
+      if (error instanceof Error === true) {
+        callback(error);
+        return;
+      }
+
+      const invalid =
+        value === null ||
+        this._dates.has(key) === true &&
+        value.date < this._dates.get(key);
+
+      if (invalid === true) {
+        callback(null, null);
+        return;
+      }
+
+      callback(null, value.data);
+    });
   }
 
-  list(key, callback) {
-    this._log('Cache list %j', key);
-    this._get(key, true, callback);
-  }
+  set(key, field, data, callback = () => {}) {
+    this._log('Cache set key=%j field=%j data=%j', key, field, data);
 
-  object(key, callback) {
-    this._log('Cache object %j', key);
-    this._get(key, false, callback);
-  }
-
-  set(key, data, callback = () => {}) {
-    this._log('Cache set %j', key);
-
-    key = this._hash(key);
+    const hash = this._hash([key, field]);
 
     const value = {
       data,
       date: Date.now()
     };
 
-    this._client.set(key, value, (error) => {
+    this._client.set(hash, value, (error) => {
       if (error instanceof Error === true) {
         callback(error);
         return;
@@ -86,64 +71,10 @@ export default class Cache {
     });
   }
 
-  del(key, callback) {
-    this._log('Cache del %j', key);
-    this._client.del(this._hash(key), callback);
-  }
-
-  _bindChannel() {
-    if (this._channel) {
-      this._channel.on('publish', this._handlePublish);
-    }
-  }
-
-  _unbindChannel() {
-    if (this._channel) {
-      this._channel.removeListener('publish', this._handlePublish);
-    }
-  }
-
-  _get(key, check, callback = () => {}) {
-    key = this._hash(key);
-
-    this._client.get(key, (error, value) => {
-      if (error instanceof Error === true) {
-        callback(error);
-        return;
-      }
-
-      if (value === null) {
-        callback(null, value);
-        return;
-      }
-
-      if (check === true && value.date < this._date) {
-        this._client.del(key, () => callback(null, null));
-        return;
-      }
-
-      callback(null, value.data);
-    });
-  }
-
-  _publish(event) {
-    this._log('Cache _publish %j', event);
-
-    const key = [event.path, {}];
-
-    switch (event.type) {
-      case 'insert':
-        this.set(key, event.data);
-        break;
-      case 'update':
-        this.set(key, event.data);
-        break;
-      case 'delete':
-        this.del(key);
-        break;
-    }
-
-    this._date = Date.now();
+  invalidate(key, callback = () => {}) {
+    this._log('Cache invalidate key=%j', key);
+    this._dates.set(key, Date.now());
+    callback();
   }
 
   _hash(key) {

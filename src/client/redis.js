@@ -64,5 +64,4 @@ export default class RedisClient extends Client {
 
     callback(null, value);
   }
-
 }
