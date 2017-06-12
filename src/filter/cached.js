@@ -1,6 +1,6 @@
 import { ScolaError } from '@scola/error';
 
-export default function filterCache(cache, formatKey = () => {},
+export default function filterCached(cache, formatKey = () => {},
   executeQuery = () => {}) {
 
   return (request, response, next) => {
