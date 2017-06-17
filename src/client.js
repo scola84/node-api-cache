@@ -5,6 +5,8 @@ export default class Client {
     this._touch = false;
   }
 
+  destroy() {}
+
   connection(value = null) {
     if (value === null) {
       return this._connection;

@@ -9,7 +9,10 @@ export default class Cache {
   }
 
   destroy() {
-    this._client = null;
+    if (this._client) {
+      this._client.destroy();
+      this._client = null;
+    }
   }
 
   client(value = null) {

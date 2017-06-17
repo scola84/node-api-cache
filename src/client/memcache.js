@@ -1,6 +1,13 @@
 import Client from '../client';
 
 export default class MemCacheClient extends Client {
+  destroy() {
+    if (this._connection) {
+      this._connection.end();
+      this._connection = null;
+    }
+  }
+
   del(key, callback = () => {}) {
     this._connection.del(key, (error) => {
       this._handleDel(error, callback);
