@@ -72,5 +72,4 @@ export default class MemCacheClient extends Client {
 
     callback(null, value);
   }
-
 }
