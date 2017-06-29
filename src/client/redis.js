@@ -16,23 +16,21 @@ export default class RedisClient extends Client {
 
   get(key, callback = () => {}) {
     this._connection.get(key, (cacheError, value) => {
-      try {
-        this._handleGet(key, value, cacheError, callback);
-      } catch (error) {
-        callback(error);
-      }
+      this._handleGet(key, value, cacheError, callback);
     });
   }
 
   set(key, value, callback = () => {}) {
     try {
-      this._connection.set(key, JSON.stringify(value),
-        (error) => {
-          this._handleSet(key, value, error, callback);
-        });
+      value = JSON.stringify(value);
     } catch (error) {
       callback(error);
+      return;
     }
+
+    this._connection.set(key, value, (error) => {
+      this._handleSet(key, value, error, callback);
+    });
   }
 
   _handleDel(error, callback) {
@@ -56,7 +54,14 @@ export default class RedisClient extends Client {
       this._connection.expire(key, this._lifetime);
     }
 
-    callback(null, JSON.parse(value));
+    try {
+      value = JSON.parse(value);
+    } catch (parseError) {
+      callback(parseError);
+      return;
+    }
+
+    callback(null, value);
   }
 
   _handleSet(key, value, error, callback) {
