@@ -16,11 +16,7 @@ export default class MemCacheClient extends Client {
 
   get(key, callback = () => {}) {
     this._connection.get(key, (cacheError, value) => {
-      try {
-        this._handleGet(key, value, cacheError, callback);
-      } catch (error) {
-        callback(error);
-      }
+      this._handleGet(key, value, cacheError, callback);
     });
   }
 
