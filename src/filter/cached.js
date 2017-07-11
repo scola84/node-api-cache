@@ -1,50 +1,55 @@
 import { ScolaError } from '@scola/error';
 
 export default function filterCached(cache, formatKey = () => {},
-  executeQuery = () => {}) {
+  executeQuery = () => {}, mode = 'object') {
 
   return (request, response, next) => {
-    const [name, key, field = null] = formatKey(request);
-
-    cache.get(key, field, (getError, cacheValue) => {
-      if (getError instanceof Error === true) {
-        next(new ScolaError('500 invalid_query ' +
-          getError.message));
-        return;
-      }
-
-      if (cacheValue !== null) {
-        request.datum(name, cacheValue);
-        next();
-        return;
-      }
-
-      executeQuery(request, (queryError, queryValue) => {
-        if (queryError instanceof Error === true) {
+    formatKey(mode, request, (key, field = null) => {
+      cache.get(key, field, (getError, cacheValue) => {
+        if (getError instanceof Error === true) {
           next(new ScolaError('500 invalid_query ' +
-            queryError.message));
+            getError.message));
           return;
         }
 
-        if (name !== 'list') {
-          if (queryValue.length === 0) {
-            next(new ScolaError('404 invalid_path ' +
-              request.path()));
-            return;
-          }
-
-          queryValue = queryValue[0];
+        if (cacheValue !== null) {
+          request.datum(mode, cacheValue);
+          next();
+          return;
         }
 
-        cache.set(key, field, queryValue, (setError) => {
-          if (setError instanceof Error === true) {
+        executeQuery(mode, request, (queryError, queryValue) => {
+          if (queryError instanceof Error === true) {
             next(new ScolaError('500 invalid_query ' +
-              setError.message));
+              queryError.message));
             return;
           }
 
-          request.datum(name, queryValue);
-          next();
+          if (queryValue === null) {
+            next();
+            return;
+          }
+
+          if (mode !== 'list') {
+            if (queryValue.length === 0) {
+              next(new ScolaError('404 invalid_path ' +
+                request.path()));
+              return;
+            }
+
+            queryValue = queryValue[0];
+          }
+
+          cache.set(key, field, queryValue, (setError) => {
+            if (setError instanceof Error === true) {
+              next(new ScolaError('500 invalid_query ' +
+                setError.message));
+              return;
+            }
+
+            request.datum(mode, queryValue);
+            next();
+          });
         });
       });
     });
