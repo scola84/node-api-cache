@@ -5,7 +5,6 @@ export default class Cache {
   constructor() {
     this._log = debuglog('cache');
     this._client = null;
-    this._dates = new Map();
   }
 
   destroy() {
@@ -40,17 +39,19 @@ export default class Cache {
         return;
       }
 
-      const invalid =
-        value === null ||
-        this._dates.has(key) === true &&
-        value.date < this._dates.get(key);
-
-      if (invalid === true) {
+      if (value === null) {
         callback(null, null);
         return;
       }
 
-      callback(null, value.data);
+      this._client.get(key, (dateError, date) => {
+        if (date === null || value.date > date) {
+          callback(null, value.data);
+          return;
+        }
+
+        callback(null, null);
+      });
     });
   }
 
@@ -76,8 +77,7 @@ export default class Cache {
 
   invalidate(key, callback = () => {}) {
     this._log('Cache invalidate key=%j', key);
-    this._dates.set(key, Date.now());
-    callback();
+    this._client.set(key, Date.now(), callback);
   }
 
   _hash(key) {
