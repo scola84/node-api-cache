@@ -12,14 +12,14 @@ export default class MemoryClient extends Client {
     if (typeof value === 'undefined') {
       value = null;
     } else if (this._touch === true) {
-      this._connection.put(key, value, this._lifetime);
+      this._connection.put(key, value, this._lifetime * 1000);
     }
 
     callback(null, value);
   }
 
   set(key, value, callback = () => {}) {
-    this._connection.put(key, value, this._lifetime);
+    this._connection.put(key, value, this._lifetime * 1000);
     callback(null, value);
   }
 }
