@@ -81,6 +81,9 @@ export default class Cache {
   }
 
   _hash(key) {
-    return md5(JSON.stringify(key)).toString();
+    return key.map((part) => {
+      return typeof part === 'string' ?
+        part : md5(JSON.stringify(part));
+    }).join(':');
   }
 }
