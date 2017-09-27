@@ -1,6 +1,6 @@
 {
   "name": "@scola/api-cache",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Cache",
   "repository": "github:scola84/node-api-cache",
   "author": "M.C. van den Boogaart <scola@kvdb.name>",
