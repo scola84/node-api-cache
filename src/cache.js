@@ -40,17 +40,17 @@ export default class Cache {
       }
 
       if (value === null) {
-        callback(null, null);
+        callback();
         return;
       }
 
       this._client.get(key, (dateError, date) => {
         if (date === null || value.date > date) {
-          callback(null, value.data);
+          callback(null, value.data, value.hash);
           return;
         }
 
-        callback(null, null);
+        callback();
       });
     });
   }
@@ -62,7 +62,8 @@ export default class Cache {
 
     const value = {
       data,
-      date: Date.now()
+      date: Date.now(),
+      hash: this._hash([data])
     };
 
     this._client.set(hash, value, (error) => {
@@ -71,7 +72,7 @@ export default class Cache {
         return;
       }
 
-      callback(null, data);
+      callback(null, value.data, value.hash);
     });
   }
 
@@ -80,8 +81,8 @@ export default class Cache {
     this._client.set(key, Date.now(), callback);
   }
 
-  _hash(key) {
-    return key.map((part) => {
+  _hash(parts) {
+    return parts.map((part) => {
       return typeof part === 'string' ?
         part : md5(JSON.stringify(part));
     }).join(':');
