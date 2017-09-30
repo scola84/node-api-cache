@@ -31,9 +31,7 @@ export default class Cache {
   get(key, field, callback = () => {}) {
     this._log('Cache get key=%j field=%j', key, field);
 
-    const hash = this._hash([key, field]);
-
-    this._client.get(hash, (error, value) => {
+    this._client.get(this._hash(key, field), (error, value) => {
       if (error instanceof Error === true) {
         callback(error);
         return;
@@ -46,7 +44,7 @@ export default class Cache {
 
       this._client.get(key, (dateError, date) => {
         if (date === null || value.date > date) {
-          callback(null, value.data, value.hash);
+          callback(null, value.data);
           return;
         }
 
@@ -58,21 +56,16 @@ export default class Cache {
   set(key, field, data, callback = () => {}) {
     this._log('Cache set key=%j field=%j data=%j', key, field, data);
 
-    const hash = this._hash([key, field]);
-
-    const value = {
+    this._client.set(this._hash(key, field), {
       data,
-      date: Date.now(),
-      hash: this._hash([data])
-    };
-
-    this._client.set(hash, value, (error) => {
+      date: Date.now()
+    }, (error) => {
       if (error instanceof Error === true) {
         callback(error);
         return;
       }
 
-      callback(null, value.data, value.hash);
+      callback(null, data);
     });
   }
 
@@ -81,10 +74,7 @@ export default class Cache {
     this._client.set(key, Date.now(), callback);
   }
 
-  _hash(parts) {
-    return parts.map((part) => {
-      return typeof part === 'string' ?
-        part : md5(JSON.stringify(part));
-    }).join(':');
+  _hash(key, field) {
+    return key + ':' + md5(field);
   }
 }
